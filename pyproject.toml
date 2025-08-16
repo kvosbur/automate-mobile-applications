@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automate-mobile-applications"
+version = "0.1.0"
+dependencies = [
+    "libmath @ file:///${PROJECT_ROOT}/libs/mobile-game-ad-detection"
+]

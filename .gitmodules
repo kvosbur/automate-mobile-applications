@@ -1,0 +1,3 @@
+[submodule "libs/mobile-game-ad-detection"]
+	path = libs/mobile-game-ad-detection
+	url = git@github.com:kvosbur/mobile-game-ad-detection.git
