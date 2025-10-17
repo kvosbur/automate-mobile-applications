@@ -4,6 +4,12 @@ from appium.webdriver.common.touch_action import TouchAction
 import time
 from typing import List
 
+"""
+Package names for games
+Adventure communist: com.kongregate.mobile.adventurecommunist.google
+adVenture capitalist: com.kongregate.mobile.adventurecapitalist.google
+"""
+
 # https://stackoverflow.com/questions/4032960/how-do-i-get-an-apk-file-from-an-android-device
 # adb shell pm list packages
 # adb shell pm path com.auxbrain.egginc
@@ -18,24 +24,24 @@ from typing import List
 
 ANDROID_BASE_CAPS = {
     # 'app': os.path.abspath('../apps/ApiDemos-debug.apk'),
-    'automationName': 'UiAutomator2',
-    'platformName': 'Android',
-    'platformVersion': os.getenv('ANDROID_PLATFORM_VERSION') or '12.0',
+    "automationName": "UiAutomator2",
+    "platformName": "Android",
+    "platformVersion": os.getenv("ANDROID_PLATFORM_VERSION") or "12.0",
     # 'deviceName': os.getenv('ANDROID_DEVICE_VERSION') or 'Android Emulator',
-    'name': 'test-session',
-    'appPackage': 'com.auxbrain.egginc',
-    'app': os.path.join(os.path.dirname(__file__), "eggInc.apk"),
-    'udid': 'RFCT70B6C8P',
-    'appActivity': 'com.auxbrain.egginc.EggIncActivity',
-    'newCommandTimeout': 600,
-    'noReset': True,
-    'fullReset': False,
-    'dontStopAppOnReset': True,
-    'autoLaunch': True,
-    'skipLogcatCapture': True
+    "name": "test-session",
+    "appPackage": "com.auxbrain.egginc",
+    "app": os.path.join(os.path.dirname(__file__), "eggInc.apk"),
+    "udid": "RFCT70B6C8P",
+    "appActivity": "com.auxbrain.egginc.EggIncActivity",
+    "newCommandTimeout": 600,
+    "noReset": True,
+    "fullReset": False,
+    "dontStopAppOnReset": True,
+    "autoLaunch": True,
+    "skipLogcatCapture": True,
 }
 
-EXECUTOR = 'http://127.0.0.1:4723/wd/hub'
+EXECUTOR = "http://127.0.0.1:4723/wd/hub"
 
 
 class AppiumService:
@@ -48,8 +54,7 @@ class AppiumService:
 
     def __init__(self) -> None:
         self.driver = webdriver.Remote(
-            command_executor=EXECUTOR,
-            desired_capabilities=ANDROID_BASE_CAPS
+            command_executor=EXECUTOR, desired_capabilities=ANDROID_BASE_CAPS
         )
         self.long_press_coords = []
         self.tap_coords = []
@@ -88,7 +93,7 @@ class AppiumService:
         print("APPIUM: long_press", self.reapply_long_press)
         action = TouchAction(self.driver)
         for coord in self.long_press_coords:
-            print('\t', coord)
+            print("\t", coord)
             action.long_press(x=coord[0], y=coord[1], duration=1)
         action.perform()
 
@@ -98,7 +103,7 @@ class AppiumService:
         print("APPIUM: tapping")
         action = TouchAction(self.driver)
         for coord in self.tap_coords:
-            print('\t', coord)
+            print("\t", coord)
             action.tap(x=coord[0], y=coord[1], count=1)
         action.perform()
 
@@ -141,7 +146,6 @@ if __name__ == "__main__":
         time.sleep(5)
         print("\n\n\n\n BLARG", i)
         print(service.get_page_source())
-
 
     service.cleanup()
     # time.sleep(10000)
