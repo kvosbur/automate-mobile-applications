@@ -4,10 +4,13 @@
 - When cloning this repo please add the `--recurse-submodules` argument on.
 - Note that lib is its own git repo so commits must be made explicitly in that folder
 
+# How to run
+`python -m automate-mobile-applications`
+
 ## Outside Setup
 
 ### Appium
-`npm i --location=global appium`
+`npm i --location=global appium@3.1.0`
 
 ### adb/android tooling
 

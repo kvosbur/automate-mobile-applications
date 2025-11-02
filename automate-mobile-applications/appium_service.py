@@ -1,8 +1,9 @@
 import os
 from appium import webdriver
-from appium.webdriver.common.touch_action import TouchAction
+from appium.options.android import UiAutomator2Options
 import time
 from typing import List
+from .appium_capabilities import adventure_capitalist_capabilities
 
 """
 Package names for games
@@ -41,7 +42,7 @@ ANDROID_BASE_CAPS = {
     "skipLogcatCapture": True,
 }
 
-EXECUTOR = "http://127.0.0.1:4723/wd/hub"
+EXECUTOR = "http://127.0.0.1:4723"
 
 
 class AppiumService:
@@ -53,9 +54,11 @@ class AppiumService:
     ignore_other_actions: bool
 
     def __init__(self) -> None:
-        self.driver = webdriver.Remote(
-            command_executor=EXECUTOR, desired_capabilities=ANDROID_BASE_CAPS
+        options = UiAutomator2Options().load_capabilities(
+            adventure_capitalist_capabilities
         )
+
+        self.driver = webdriver.Remote(EXECUTOR, options=options)
         self.long_press_coords = []
         self.tap_coords = []
         self.reapply_long_press = True
@@ -86,38 +89,38 @@ class AppiumService:
                 return
         self.tap_coords.append([x, y])
 
-    def _long_press_at_coords(self):
-        if len(self.long_press_coords) == 0 or not self.reapply_long_press:
-            return
+    # def _long_press_at_coords(self):
+    #     if len(self.long_press_coords) == 0 or not self.reapply_long_press:
+    #         return
 
-        print("APPIUM: long_press", self.reapply_long_press)
-        action = TouchAction(self.driver)
-        for coord in self.long_press_coords:
-            print("\t", coord)
-            action.long_press(x=coord[0], y=coord[1], duration=1)
-        action.perform()
+    #     print("APPIUM: long_press", self.reapply_long_press)
+    #     action = TouchAction(self.driver)
+    #     for coord in self.long_press_coords:
+    #         print("\t", coord)
+    #         action.long_press(x=coord[0], y=coord[1], duration=1)
+    #     action.perform()
 
-    def _tap_at_coords(self):
-        if len(self.tap_coords) == 0:
-            return
-        print("APPIUM: tapping")
-        action = TouchAction(self.driver)
-        for coord in self.tap_coords:
-            print("\t", coord)
-            action.tap(x=coord[0], y=coord[1], count=1)
-        action.perform()
+    # def _tap_at_coords(self):
+    #     if len(self.tap_coords) == 0:
+    #         return
+    #     print("APPIUM: tapping")
+    #     action = TouchAction(self.driver)
+    #     for coord in self.tap_coords:
+    #         print("\t", coord)
+    #         action.tap(x=coord[0], y=coord[1], count=1)
+    #     action.perform()
 
-        self.reapply_long_press = True
+    #     self.reapply_long_press = True
 
-    def drag_from_to(self, from_coords, to_coords):
-        action = TouchAction(self.driver)
-        action.press(x=from_coords[0], y=from_coords[1])
-        action.move_to(x=to_coords[0], y=to_coords[1])
-        action.release()
-        action.perform()
+    # def drag_from_to(self, from_coords, to_coords):
+    #     action = TouchAction(self.driver)
+    #     action.press(x=from_coords[0], y=from_coords[1])
+    #     action.move_to(x=to_coords[0], y=to_coords[1])
+    #     action.release()
+    #     action.perform()
 
-        self.reapply_long_press = True
-        self.ignore_other_actions = True
+    #     self.reapply_long_press = True
+    #     self.ignore_other_actions = True
 
     def do_actions(self):
         if self.ignore_other_actions:
@@ -136,7 +139,7 @@ class AppiumService:
         return self.driver.page_source
 
     def cleanup(self):
-        self.driver.close_app()
+        self.driver.quit()
 
 
 if __name__ == "__main__":
