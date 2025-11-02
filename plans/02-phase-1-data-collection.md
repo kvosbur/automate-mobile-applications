@@ -41,7 +41,6 @@ This phase establishes the foundation of the entire system. By the end, you'll h
      - `appium-python-client>=3.0.0`
      - `opencv-python>=4.8.0`
      - `pillow>=10.0.0`
-     - `pyyaml>=6.0`
      - `uuid-utils>=0.7.0` (for UUIDv7)
      - `rich>=13.0.0` (CLI progress bars)
      - `pydantic>=2.0.0` (config validation)
@@ -87,7 +86,7 @@ This phase establishes the foundation of the entire system. By the end, you'll h
 
 #### Tasks
 1. **Create `ConfigManager` class** (`core/config_manager.py`)
-   - Load YAML files using `pyyaml`
+   - Load JSON files using built-in `json` module
    - Validate configs using Pydantic models
    - Provide typed access to config values
    - Handle missing files gracefully
@@ -99,12 +98,12 @@ This phase establishes the foundation of the entire system. By the end, you'll h
    - `FilteringConfig` model
 
 3. **Create config templates**
-   - `configs/global_config.yaml` with defaults
-   - `configs/games/game_template.yaml` with all options documented
-   - Add inline comments explaining each field
+   - `configs/global_config.json` with defaults
+   - `configs/games/game_template.json` with all options documented
+   - Use JSON format for all configurations
 
 4. **Implement action loader** (`actions/action_loader.py`)
-   - Parse YAML action definitions
+   - Parse JSON action definitions
    - Convert to Python dataclasses
    - Validate action parameters
 
@@ -124,13 +123,13 @@ This phase establishes the foundation of the entire system. By the end, you'll h
 - `automate-mobile-applications/utils/validators.py`
 - `automate-mobile-applications/actions/action_schema.py`
 - `automate-mobile-applications/actions/action_loader.py`
-- `configs/global_config.yaml`
-- `configs/games/game_template.yaml`
+- `configs/global_config.json`
+- `configs/games/game_template.json`
 
 #### Code Example: ConfigManager
 ```python
 from pydantic import BaseModel, Field
-import yaml
+import json
 from pathlib import Path
 
 class GlobalConfig(BaseModel):
@@ -141,13 +140,13 @@ class GlobalConfig(BaseModel):
     compress_sessions_on_completion: bool = True
 
 class ConfigManager:
-    def __init__(self, config_path: str = "configs/global_config.yaml"):
+    def __init__(self, config_path: str = "configs/global_config.json"):
         self.config_path = Path(config_path)
         self._config = None
     
     def load(self) -> GlobalConfig:
         with open(self.config_path) as f:
-            data = yaml.safe_load(f)
+            data = json.load(f)
         self._config = GlobalConfig(**data)
         return self._config
     

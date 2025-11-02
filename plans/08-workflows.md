@@ -14,11 +14,11 @@ adb devices
 appium --port 4723
 
 # 3. Create game configuration
-# Edit configs/games/my_game.yaml with game-specific setup actions
+# Edit configs/games/my_game.json with game-specific setup actions
 
 # 4. Run data collection
 python -m automate-mobile-applications collect \
-  --config configs/games/my_game.yaml \
+  --config configs/games/my_game.json \
   --devices emulator-5554,FA83M1A12345 \
   --sessions 25
 
@@ -185,7 +185,7 @@ python -m automate-mobile-applications train \
 # 1. Run inference sessions
 python -m automate-mobile-applications run \
   --model models/model_v001/best.pt \
-  --config configs/games/my_game.yaml \
+  --config configs/games/my_game.json \
   --devices emulator-5554 \
   --sessions 20
 
@@ -285,43 +285,65 @@ python -m automate-mobile-applications train \
 
 ### Workflow 7: Compare Model Versions
 
-**Objective**: Evaluate which model performs best
+**Objective**: Get a rough sense of which model performs better (acknowledge comparison limitations)
+
+> **⚠️ Technical Limitation**: Direct model comparison is challenging because:
+> - Each session shows different ads (non-deterministic environment)
+> - Multiple valid action sequences may exist
+> - Success isn't always binary (partial success, stuck in different states)
+> - Timing affects outcomes (same action at frame 10 vs frame 20)
+>
+> **Comparison Strategy**: Run both models on fresh sessions and compare aggregate success rates. This gives a *rough indication* of improvement but isn't a controlled comparison. Individual session-level comparison isn't meaningful since models see different ads.
 
 ```bash
-# 1. Run comparison test
-python -m automate-mobile-applications compare \
-  --models models/model_v001/best.pt,models/model_v002/best.pt \
-  --config configs/games/my_game.yaml \
-  --sessions 20
+# 1. Run model v001 on 20 fresh sessions
+python -m automate-mobile-applications run \
+  --model models/model_v001/best.pt \
+  --config configs/games/my_game.json \
+  --devices emulator-5554 \
+  --sessions 20 \
+  --label "model_v001_eval"
 
 # Output:
-# Running comparison: model_v001 vs model_v002
-# Each model tested on same 20 sessions
-#
-# ╔═══════════════════════════════════════════╗
-# ║       Model Comparison                    ║
-# ╠═══════════════════════════════════════════╣
-# ║                │ v001    │ v002           ║
-# ║ Success rate   │  70%    │  82%  (+12%)  ║
-# ║ Avg confidence │  0.76   │  0.81          ║
-# ║ Avg actions    │  2.4    │  2.1           ║
-# ║ Avg duration   │  38s    │  35s           ║
-# ╚═══════════════════════════════════════════╝
-#
-# Recommendation: Deploy model_v002
-# Significant improvement in success rate (+12%)
+# Success rate: 14/20 (70%)
 
-# 2. Generate detailed report
+# 2. Run model v002 on 20 different fresh sessions
+python -m automate-mobile-applications run \
+  --model models/model_v002/best.pt \
+  --config configs/games/my_game.json \
+  --devices emulator-5554 \
+  --sessions 20 \
+  --label "model_v002_eval"
+
+# Output:
+# Success rate: 16/20 (80%)
+
+# 3. Compare aggregate metrics
 python -m automate-mobile-applications report \
   --sessions-dir sessions/ \
+  --filter-labels "model_v001_eval,model_v002_eval" \
   --output comparison_report.html
 
-# Opens in browser with:
-# - Success rate charts
-# - Failure mode analysis
-# - Detection heatmaps
-# - Example sessions (successful vs failed)
+# Report shows:
+# - Success rate by model (rough comparison)
+# - Average confidence scores
+# - Common failure modes for each
+# - Detection frequency (which buttons found most often)
+# - Average session duration
 ```
+
+**Interpretation Notes**:
+- Higher success rate across many sessions suggests better model, but...
+- Statistical significance requires 50+ sessions per model
+- Ad variance means direct comparison is noisy
+- Focus on **failure mode analysis** rather than head-to-head metrics
+- Best evaluation: Does v002 solve failures that v001 had?
+
+**Better Approach for Phase 5**:
+- Run 50+ sessions per model version
+- Track failure types (stuck in store, timeout, wrong button)
+- Manual review of 10-20 failed sessions per model
+- Ask: "Does new model fail in the same ways or different ways?"
 
 ---
 
@@ -331,15 +353,15 @@ python -m automate-mobile-applications report \
 
 ```bash
 # 1. Create configs for multiple games
-# - configs/games/puzzle_game.yaml
-# - configs/games/racing_game.yaml
-# - configs/games/rpg_game.yaml
+# - configs/games/puzzle_game.json
+# - configs/games/racing_game.json
+# - configs/games/rpg_game.json
 
 # 2. Run inference on each game
 for game in puzzle_game racing_game rpg_game; do
   python -m automate-mobile-applications run \
     --model models/model_v002/best.pt \
-    --config configs/games/${game}.yaml \
+    --config configs/games/${game}.json \
     --devices emulator-5554 \
     --sessions 10
 done
@@ -412,64 +434,80 @@ python -m automate-mobile-applications retry \
 
 ## 📝 Configuration Examples
 
-### Global Config (`configs/global_config.yaml`)
-```yaml
-system:
-  appium_host: "localhost"
-  appium_port: 4723
-  capture_interval_seconds: 1.0
-  session_max_duration_seconds: 120
-  compress_sessions_on_completion: true
-
-paths:
-  sessions_dir: "sessions"
-  dataset_dir: "dataset"
-  models_dir: "models"
-  failed_sessions_dir: "sessions/failed"
-
-filtering:
-  frame_diff_threshold: 0.15
-  visual_diversity_clusters: 10
-  max_images_per_session: 50
-
-devices:
-  - device_id: "emulator-5554"
-    enabled: true
-  - device_id: "FA83M1A12345"
-    enabled: true
+### Global Config (`configs/global_config.json`)
+```json
+{
+  "system": {
+    "appium_host": "localhost",
+    "appium_port": 4723,
+    "capture_interval_seconds": 1.0,
+    "session_max_duration_seconds": 120,
+    "compress_sessions_on_completion": true
+  },
+  "paths": {
+    "sessions_dir": "sessions",
+    "dataset_dir": "dataset",
+    "models_dir": "models",
+    "failed_sessions_dir": "sessions/failed"
+  },
+  "filtering": {
+    "frame_diff_threshold": 0.15,
+    "visual_diversity_clusters": 10,
+    "max_images_per_session": 50
+  },
+  "devices": [
+    {
+      "device_id": "emulator-5554",
+      "enabled": true
+    },
+    {
+      "device_id": "FA83M1A12345",
+      "enabled": true
+    }
+  ]
+}
 ```
 
-### Game Config (`configs/games/puzzle_game.yaml`)
-```yaml
-game: "Puzzle Adventure"
-package_name: "com.example.puzzleadventure"
-activity: ".MainActivity"
-
-device_specific_actions:
-  emulator-5554:
-    setup_steps:
-      - action: "tap"
-        x: 540
-        y: 1500
-        description: "Tap menu button"
-      
-      - action: "wait"
-        seconds: 2.0
-        description: "Wait for menu animation"
-      
-      - action: "tap"
-        resource_id: "com.example.puzzleadventure:id/watch_ad_btn"
-        description: "Tap watch ad button"
-      
-      - action: "wait_for_element"
-        resource_id: "com.google.android.gms.ads.AdView"
-        timeout_seconds: 10
-        description: "Wait for ad to load"
-
-metadata:
-  typical_ad_duration_seconds: 30
-  reward_type: "coins"
-  notes: "Ads appear after every 3 levels"
+### Game Config (`configs/games/puzzle_game.json`)
+```json
+{
+  "game": "Puzzle Adventure",
+  "package_name": "com.example.puzzleadventure",
+  "activity": ".MainActivity",
+  "device_specific_actions": {
+    "emulator-5554": {
+      "setup_steps": [
+        {
+          "action": "tap",
+          "x": 540,
+          "y": 1500,
+          "description": "Tap menu button"
+        },
+        {
+          "action": "wait",
+          "seconds": 2.0,
+          "description": "Wait for menu animation"
+        },
+        {
+          "action": "tap",
+          "resource_id": "com.example.puzzleadventure:id/watch_ad_btn",
+          "description": "Tap watch ad button"
+        },
+        {
+          "action": "wait_for_element",
+          "resource_id": "com.google.android.gms.ads.AdView",
+          "timeout_seconds": 10,
+          "description": "Wait for ad to load"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "typical_ad_duration_seconds": 30,
+    "reward_type": "coins",
+    "notes": "Ads appear after every 3 levels"
+  }
+}
 ```
 
 ---

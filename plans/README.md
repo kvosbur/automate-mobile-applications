@@ -13,23 +13,23 @@ This directory contains comprehensive planning documents for implementing a mobi
 
 ### Core Planning Documents
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| **[00-project-overview.md](./00-project-overview.md)** | High-level goals, success criteria, milestones | ✅ Complete |
-| **[01-architecture-and-schemas.md](./01-architecture-and-schemas.md)** | System architecture, data schemas, component interfaces | ✅ Complete |
-| **[02-phase-1-data-collection.md](./02-phase-1-data-collection.md)** | Foundation & data collection MVP implementation | ✅ Complete |
-| **[03-phase-2-filtering.md](./03-phase-2-filtering.md)** | Image filtering & dataset preparation | ✅ Complete |
-| **[04-phase-3-training.md](./04-phase-3-training.md)** | Model training pipeline | ✅ Complete |
-| **[05-phase-4-inference.md](./05-phase-4-inference.md)** | Inference mode & autonomous navigation | ✅ Complete |
-| **[06-phase-5-iteration.md](./06-phase-5-iteration.md)** | Iterative improvement & refinement | ✅ Complete |
+| Document | Description | Planning Status |
+|----------|-------------|-----------------|
+| **[00-project-overview.md](./00-project-overview.md)** | High-level goals, success criteria, milestones | 📝 Planned |
+| **[01-architecture-and-schemas.md](./01-architecture-and-schemas.md)** | System architecture, data schemas, component interfaces | 📝 Planned |
+| **[02-phase-1-data-collection.md](./02-phase-1-data-collection.md)** | Foundation & data collection MVP implementation | 📝 Planned |
+| **[03-phase-2-filtering.md](./03-phase-2-filtering.md)** | Image filtering & dataset preparation | 📝 Planned |
+| **[04-phase-3-training.md](./04-phase-3-training.md)** | Model training pipeline | 📝 Planned |
+| **[05-phase-4-inference.md](./05-phase-4-inference.md)** | Inference mode & autonomous navigation | 📝 Planned |
+| **[06-phase-5-iteration.md](./06-phase-5-iteration.md)** | Iterative improvement & refinement | 📝 Planned |
 
 ### Supporting Documents
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| **[07-technical-stack.md](./07-technical-stack.md)** | Dependencies, installation, system requirements | ✅ Complete |
-| **[08-workflows.md](./08-workflows.md)** | Complete workflows, CLI examples, common tasks | ✅ Complete |
-| **[09-challenges.md](./09-challenges.md)** | Challenges, mitigation strategies, risk assessment | ✅ Complete |
+| Document | Description | Planning Status |
+|----------|-------------|-----------------|
+| **[07-technical-stack.md](./07-technical-stack.md)** | Dependencies, installation, system requirements | 📝 Planned |
+| **[08-workflows.md](./08-workflows.md)** | Complete workflows, CLI examples, common tasks | 📝 Planned |
+| **[09-challenges.md](./09-challenges.md)** | Challenges, mitigation strategies, risk assessment | 📝 Planned |
 
 ---
 
@@ -47,9 +47,10 @@ This directory contains comprehensive planning documents for implementing a mobi
 - CLI collect command
 
 **Success Metrics**:
-- [ ] 50+ successful sessions
-- [ ] <5% failure rate
-- [ ] Compression working
+- [ ] 50+ sessions captured
+- [ ] Sessions contain complete metadata
+- [ ] Compression reduces storage by >50%
+- [ ] Failed sessions isolated with error logs
 
 **Next Actions**:
 1. Review [Phase 1 plan](./02-phase-1-data-collection.md)
@@ -87,7 +88,7 @@ This directory contains comprehensive planning documents for implementing a mobi
 **Success Metrics**:
 - [ ] Model v001 trained
 - [ ] Inference <2s on CPU
-- [ ] mAP50 >0.60
+- [ ] mAP50 >0.60 (mean Average Precision - measures detection accuracy, 0.60 = reasonable for first model)
 
 ---
 

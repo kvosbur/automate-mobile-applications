@@ -26,7 +26,6 @@ dependencies = [
     "numpy>=1.24.0",
     
     # Configuration & Validation
-    "pyyaml>=6.0",
     "pydantic>=2.0.0",
     
     # Utilities
@@ -138,10 +137,6 @@ label-studio start
 - Config validation with type hints
 - Automatic parsing and conversion
 - Clear error messages
-
-**pyyaml** (6.0+)
-- YAML config file parsing
-- Human-readable configuration
 
 ### CLI & User Experience
 
@@ -334,22 +329,34 @@ brew install libffi
 
 ## 📊 Performance Benchmarks
 
-### Expected Performance (MacBook Pro M1, 16GB RAM)
+> **⚠️ Important Note**: The benchmarks below are **initial estimates** based on typical performance characteristics of similar systems. These have **not been validated** against real measurements and should be treated as rough guidelines only.
+>
+> **Screenshot capture** in particular may be significantly slower than estimated based on prior experience with Appium. Actual performance will vary based on:
+> - Device hardware and Android version
+> - USB connection quality
+> - Appium server load
+> - Network/IPC overhead
+>
+> **Action Item**: Benchmark all operations during Phase 1 implementation and update this section with real measurements. Track actual vs. estimated performance to identify bottlenecks early.
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Screenshot capture | 50-100ms | Via Appium |
-| YOLO inference (yolov8n, CPU) | 1.5-2.0s | 640x640 input |
-| Frame difference calculation | 10-20ms | 1080p images |
-| Visual diversity (100 images) | 5-10s | K-means clustering |
-| Session compression | 2-5s | 50 frames |
+### Estimated Performance (MacBook Pro M1, 16GB RAM)
 
-### GPU Acceleration (NVIDIA RTX 3080)
+| Operation | Estimated Time | Notes |
+|-----------|----------------|-------|
+| Screenshot capture | 50-100ms | **Via Appium - may be much slower in practice** |
+| YOLO inference (yolov8n, CPU) | 1.5-2.0s | 640x640 input, unoptimized |
+| Frame difference calculation | 10-20ms | 1080p images with OpenCV |
+| Visual diversity (100 images) | 5-10s | K-means clustering with scikit-learn |
+| Session compression | 2-5s | 50 PNG frames to ZIP |
 
-| Operation | CPU Time | GPU Time | Speedup |
-|-----------|----------|----------|---------|
+### Estimated GPU Acceleration (NVIDIA RTX 3080)
+
+| Operation | Est. CPU Time | Est. GPU Time | Est. Speedup |
+|-----------|---------------|---------------|--------------|
 | YOLO inference (yolov8n) | 1.8s | 0.15s | 12x |
 | YOLO training (100 epochs) | ~45 min | ~8 min | 5.6x |
+
+> **Note**: GPU benchmarks are especially uncertain. Actual speedup depends on batch size, model architecture, PyTorch version, and CUDA drivers. Real-world performance testing is essential.
 
 ---
 

@@ -332,7 +332,7 @@ def _inference_capture_loop(self, driver, session_id: str):
 ```bash
 python -m automate-mobile-applications run \
   --model models/model_v001/best.pt \
-  --config configs/games/puzzle_game.yaml \
+  --config configs/games/puzzle_game.json \
   --devices emulator-5554 \
   --sessions 20
 ```

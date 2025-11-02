@@ -103,12 +103,12 @@ automate-mobile-applications/
 │   └── 09-challenges.md
 │
 ├── configs/                          # Game-specific configurations
-│   ├── global_config.yaml            # System-wide settings
+│   ├── global_config.json            # System-wide settings
 │   ├── games/                        # Per-game configs
-│   │   ├── game_template.yaml        # Reference template
-│   │   ├── example_game_1.yaml
-│   │   └── example_game_2.yaml
-│   └── training_config.yaml          # Model training parameters
+│   │   ├── game_template.json        # Reference template
+│   │   ├── example_game_1.json
+│   │   └── example_game_2.json
+│   └── training_config.json          # Model training parameters
 │
 ├── automate-mobile-applications/     # Main package
 │   ├── __init__.py
@@ -187,10 +187,10 @@ automate-mobile-applications/
 │   ├── skip_button-gray-bottom_right/
 │   └── ...
 │
-└── models/                           # Trained models (git-ignored)
+├── models/                           # Trained models (git-ignored)
     ├── model_v001/
     │   ├── best.pt                   # YOLO weights
-    │   ├── training_config.yaml      # Hyperparameters used
+    │   ├── training_config.json      # Hyperparameters used
     │   └── metrics.json              # Training metrics, dataset size
     ├── model_v002/
     └── ...
@@ -237,74 +237,92 @@ mobile-game-ad-detection/
 
 ## 🗂️ Data Schemas
 
-### 1. Global Configuration (`configs/global_config.yaml`)
+### 1. Global Configuration (`configs/global_config.json`)
 
-```yaml
-system:
-  appium_host: "localhost"
-  appium_port: 4723
-  capture_interval_seconds: 1.0        # Configurable frame rate
-  session_max_duration_seconds: 120    # Fallback timeout
-  compress_sessions_on_completion: true
-  
-paths:
-  sessions_dir: "sessions"
-  dataset_dir: "dataset"
-  models_dir: "models"
-  failed_sessions_dir: "sessions/failed"
-
-filtering:
-  frame_diff_threshold: 0.15           # Configurable visual difference threshold
-  visual_diversity_clusters: 10        # For k-means clustering
-  max_images_per_session: 50           # Max images to pull from one session
-
-devices:
-  - device_id: "emulator-5554"
-    enabled: true
-  - device_id: "FA83M1A12345"
-    enabled: true
+```json
+{
+  "system": {
+    "appium_host": "localhost",
+    "appium_port": 4723,
+    "capture_interval_seconds": 1.0,
+    "session_max_duration_seconds": 120,
+    "compress_sessions_on_completion": true
+  },
+  "paths": {
+    "sessions_dir": "sessions",
+    "dataset_dir": "dataset",
+    "models_dir": "models",
+    "failed_sessions_dir": "sessions/failed"
+  },
+  "filtering": {
+    "frame_diff_threshold": 0.15,
+    "visual_diversity_clusters": 10,
+    "max_images_per_session": 50
+  },
+  "devices": [
+    {
+      "device_id": "emulator-5554",
+      "enabled": true
+    },
+    {
+      "device_id": "FA83M1A12345",
+      "enabled": true
+    }
+  ]
+}
 ```
 
-### 2. Game Configuration (`configs/games/example_game_1.yaml`)
+### 2. Game Configuration (`configs/games/example_game_1.json`)
 
-```yaml
-game: "Example Puzzle Game"
-package_name: "com.example.puzzlegame"
-activity: ".MainActivity"
-
-device_specific_actions:
-  emulator-5554:
-    setup_steps:
-      - action: "tap"
-        x: 540
-        y: 960
-        description: "Tap main menu button"
-      
-      - action: "wait"
-        seconds: 2.0
-        description: "Wait for menu to load"
-      
-      - action: "tap"
-        resource_id: "com.example.puzzlegame:id/watch_ad_button"
-        description: "Tap 'Watch Ad for Coins' button"
-      
-      - action: "wait_for_element"
-        resource_id: "com.example.ad:id/ad_container"
-        timeout_seconds: 10
-        description: "Wait for ad to appear"
-  
-  FA83M1A12345:
-    setup_steps:
-      - action: "tap"
-        x: 720
-        y: 1280
-        description: "Tap main menu button (different resolution)"
-      # ... device-specific coordinates
-
-metadata:
-  typical_ad_duration_seconds: 30
-  reward_type: "coins"
-  notes: "This game has reliable ad buttons"
+```json
+{
+  "game": "Example Puzzle Game",
+  "package_name": "com.example.puzzlegame",
+  "activity": ".MainActivity",
+  "device_specific_actions": {
+    "emulator-5554": {
+      "setup_steps": [
+        {
+          "action": "tap",
+          "x": 540,
+          "y": 960,
+          "description": "Tap main menu button"
+        },
+        {
+          "action": "wait",
+          "seconds": 2.0,
+          "description": "Wait for menu to load"
+        },
+        {
+          "action": "tap",
+          "resource_id": "com.example.puzzlegame:id/watch_ad_button",
+          "description": "Tap 'Watch Ad for Coins' button"
+        },
+        {
+          "action": "wait_for_element",
+          "resource_id": "com.example.ad:id/ad_container",
+          "timeout_seconds": 10,
+          "description": "Wait for ad to appear"
+        }
+      ]
+    },
+    "FA83M1A12345": {
+      "setup_steps": [
+        {
+          "action": "tap",
+          "x": 720,
+          "y": 1280,
+          "description": "Tap main menu button (different resolution)"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "typical_ad_duration_seconds": 30,
+    "reward_type": "coins",
+    "notes": "This game has reliable ad buttons"
+  }
+}
 ```
 
 ### 3. Action Schema (Python Dataclasses in `actions/action_schema.py`)

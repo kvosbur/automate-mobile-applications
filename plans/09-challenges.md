@@ -119,32 +119,36 @@
 
 **Mitigation Strategies**:
 
-1. **Prefer resource IDs**
-   - Use `resource_id` or `xpath` when available
-   - Coordinates only as last resort
-   - More robust across devices
+1. **X,Y coordinates as primary approach**
+   - Most mobile games render on **canvas/game engine** (Unity, Unreal)
+   - Resource IDs not available for in-game UI elements
+   - **However**: Ads often use native Android UI with resource IDs
+   - Strategy: Use resource IDs for ad navigation (Phase 4+), coordinates for game setup
 
 2. **Device-specific configs**
-   - Separate action configs per device
+   - Separate action configs per device (necessary for canvas-based games)
    - Easy to maintain
    - Good for MVP
 
 3. **Coordinate normalization**
    - Store normalized coordinates (0-1 range)
    - Convert to actual pixels based on screen size
-   - More portable
+   - More portable across devices with same aspect ratio
 
-4. **Model-based navigation**
-   - Use model detections to find tap points
-   - Model outputs actual pixel coordinates
-   - Device-agnostic (Phase 4+)
+4. **Model-based navigation** (Phase 4+)
+   - Use model detections to find tap points dynamically
+   - Model outputs actual pixel coordinates from visual features
+   - **Most promising**: Device-agnostic since based on visual appearance
+   - Solves canvas rendering problem
 
 5. **Screen size detection**
    - Query actual screen size via ADB/Appium
    - Scale coordinates accordingly
-   - Handle aspect ratio differences
+   - Handle aspect ratio differences (challenging for canvas games)
 
-**Success Criteria**: Same config works on multiple devices with minimal changes
+**Reality Check**: Setup actions (navigating game menus) will likely require device-specific coordinate configs due to canvas rendering. Ad navigation (Phase 4) can potentially use resource IDs since ads are native Android views.
+
+**Success Criteria**: Same config works on multiple devices with minimal changes (may require coordinate adjustments per device)
 
 ---
 
@@ -166,17 +170,25 @@
    - Consider WebP or JPEG for inference mode
    - Quality vs size tradeoff
 
-3. **Selective archival**
+3. **Pre-compression resizing** (optional fallback)
+   - Resize images to smaller dimensions before compression
+   - E.g., 1080p → 720p or model training resolution (640x640)
+   - Further reduces storage if space becomes critical
+   - Trade-off: Can't go back to full resolution later
+   - **Not enabled by default** but available as config option
+   - Best for inference mode where full res not needed
+
+4. **Selective archival**
    - Archive old sessions to external drive
    - Keep only recent/important sessions on laptop
    - Automated archive command
 
-4. **Delete failed sessions**
+5. **Delete failed sessions**
    - Failed sessions less useful
    - Keep error logs, delete images
    - Configurable retention policy
 
-5. **Cloud storage**
+6. **Cloud storage**
    - Upload important sessions to cloud
    - Free up local space
    - Backup for presentation data
@@ -256,6 +268,60 @@
    - Better feature extraction
 
 **Success Criteria**: >60% success rate on completely unseen games
+
+---
+
+### 7a. Early-Stage Data Imbalance (Temporal Overfitting)
+
+**Challenge**: Initially, model can only see beginning of ads (can't navigate further yet). This creates severe data imbalance where early actions (e.g., "wait 5 seconds") are over-represented vs. later actions (e.g., "tap close button at 25 seconds").
+
+**Impact**: 🔴 High - Model overfits to early-stage patterns, may not learn late-stage navigation
+
+**Why This Happens**:
+- First model trained on Phase 1 data: only frames before first close attempt
+- Don't have data on what happens after first tap until Phase 4
+- Result: 90% of training data shows "waiting" state, 10% shows "closeable" state
+- Model learns "wait and detect loading screens" but not "navigate complex close sequences"
+
+**Mitigation Strategies**:
+
+1. **Temporal data augmentation**
+   - Duplicate later-stage frames more frequently
+   - Over-sample rare button appearances
+   - Balance training data by action type, not just by frame count
+
+2. **Progressive data collection**
+   - Phase 1: Collect passive frames (all early-stage)
+   - Phase 4: Collect active frames (includes late-stage as model succeeds)
+   - Phase 5: Re-balance dataset with successful navigation sequences
+   - Continuously improve data diversity
+
+3. **Manual session completion**
+   - Before Phase 4, manually complete some ad sessions
+   - Capture what late-stage buttons look like
+   - Add these rare examples to training set
+   - Small effort, high impact
+
+4. **Synthetic late-stage examples**
+   - Take early-stage screenshots
+   - Wait 20-30 seconds, screenshot again
+   - Manually annotate close buttons that appear
+   - Increases late-stage representation
+
+5. **Class-weighted loss**
+   - Penalize model more for missing rare buttons (close, skip)
+   - Less penalty for common states (loading, playing)
+   - YOLO supports class weights in training config
+
+6. **Monitor class distribution**
+   - Track how many examples per button type
+   - Alert when imbalance exceeds 10:1 ratio
+   - Actively collect under-represented cases
+
+**Success Criteria**: 
+- Training set has >20 examples of each button type
+- Late-stage navigation success rate improves with each iteration
+- Model doesn't default to "wait forever" strategy
 
 ---
 
@@ -381,7 +447,8 @@
 | Device coords | Medium | Medium | 🟡 Important |
 | Storage space | High | Low | 🟢 Monitor |
 | Annotation errors | Medium | Medium | 🟡 Important |
-| Overfitting | Medium | Medium | 🟡 Important |
+| Overfitting (game-specific) | Medium | Medium | 🟡 Important |
+| **Temporal data imbalance** | **High** | **High** | **🔴 Critical** |
 | Ad completion detection | Medium | Medium | 🟡 Important |
 | Label naming | Low | Low | 🟢 Monitor |
 | Data corruption | Low | Medium | 🟡 Important |
