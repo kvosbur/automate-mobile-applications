@@ -15,9 +15,6 @@
 ### adb/android tooling
 
 ## Next Steps
-- get android emulator setup with google play store
-- download apks for necessary applications
-- See if apks can be run on non google play store emulators
 - open up an application and navigate to ad
 - capture images on time interval from ad for a specified amount of time
 - For each image, track the following information:
